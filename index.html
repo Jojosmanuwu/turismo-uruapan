@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turismo Uruapan — Experiencias & Festival de las Velas</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Plus Jakarta Sans & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Supabase JS Oficial -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        obsidian: {
+                            950: '#070504',
+                            900: '#0f0b09',
+                            800: '#1a1310',
+                            700: '#291f1a'
+                        },
+                        cempasuchil: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#ea580c',
+                            700: '#c2410c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #070504;
+            color: #f5f5f4;
+            overflow-x: hidden;
+        }
+        /* Efecto de brillo de vela */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.45; transform: scale(1); }
+            50% { opacity: 0.75; transform: scale(1.06); }
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0px) scale(1); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-120px) scale(0.4); opacity: 0; }
+        }
+        .candle-glow {
+            animation: pulseGlow 5s ease-in-out infinite;
+        }
+        .ember {
+            position: absolute;
+            border-radius: 9999px;
+            background: radial-gradient(circle, #fde047 0%, #f97316 70%, transparent 100%);
+            pointer-events: none;
+            animation: floatUp 6s infinite ease-in;
+        }
+        .glass-panel {
+            background: rgba(26, 19, 16, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(245, 158, 11, 0.16);
+        }
+        .glass-card {
+            background: linear-gradient(165deg, rgba(34, 25, 20, 0.88) 0%, rgba(15, 11, 9, 0.96) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(245, 158, 11, 0.45);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -15px rgba(234, 88, 12, 0.22);
+        }
+        /* Scrollbar elegante */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #070504; }
+        ::-webkit-scrollbar-thumb { background: #291f1a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-cempasuchil-500 selection:text-obsidian-950">
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="fixed top-0 inset-x-0 z-40 glass-panel border-b border-amber-500/15">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-700 flex items-center justify-center text-obsidian-950 shadow-lg shadow-orange-500/30 group-hover:scale-105 transition-transform">
+                        <i class="ph-fill ph-flame text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-serif font-bold text-2xl tracking-tight text-white leading-none">
+                            Turismo<span class="text-amber-400">UPN</span>
+                        </div>
+                        <span class="text-[10px] uppercase tracking-[0.2em] text-amber-400/80 font-semibold block mt-0.5" data-i18n="nav_sub">
+                            Uruapan • Michoacán
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Enlaces centrales -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#paquetes" class="text-sm font-medium text-stone-300 hover:text-amber-400 transition" data-i18n="nav_paquetes">Itinerarios Guiados</a>
+                    <a href="#armador" class="text-sm font-medium text-stone-300 hover:text-amber-400 transition" data-i18n="nav_armador">Arma tu Plan</a>
+                    <a href="#eventos" class="text-sm font-medium text-stone-300 hover:text-amber-400 transition" data-i18n="nav_eventos">Cartelera de Velas</a>
+                    <a href="#lugares" class="text-sm font-medium text-stone-300 hover:text-amber-400 transition" data-i18n="nav_lugares">Destinos y Sabores</a>
+                </div>
+
+                <!-- Controles derechos: Estado BD, Mis Reservas e Idioma -->
+                <div class="flex items-center gap-3">
+                    <!-- Indicador de conexión en tiempo real -->
+                    <div id="db-status" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span data-i18n="status_live">En vivo</span>
+                    </div>
+
+                    <!-- Botón de Mis Reservas -->
+                    <button onclick="openMyPlansModal()" class="relative flex items-center gap-2 bg-obsidian-800 hover:bg-obsidian-700 text-stone-200 px-3.5 py-2 rounded-full text-sm font-medium transition border border-white/10">
+                        <i class="ph ph-ticket text-amber-400 text-lg"></i>
+                        <span class="hidden lg:inline" data-i18n="nav_mis_planes">Mi Itinerario</span>
+                        <span id="badge-count" class="w-5 h-5 rounded-full bg-amber-500 text-obsidian-950 text-xs font-extrabold flex items-center justify-center">0</span>
+                    </button>
+
+                    <!-- Switch Bilingüe -->
+                    <button onclick="toggleLanguage()" class="flex items-center gap-2 bg-gradient-to-r from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 text-amber-300 px-4 py-2 rounded-full text-sm font-semibold transition border border-amber-500/30">
+                        <i class="ph ph-translate text-lg"></i>
+                        <span id="lang-flag">🇺🇸</span>
+                        <span id="lang-text" class="hidden sm:inline">EN</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION CON AMBIENTE DE VELAS -->
+    <header class="relative pt-32 pb-24 md:pt-40 md:pb-32 px-4 overflow-hidden border-b border-amber-500/15">
+        <!-- Luces de fondo místicas -->
+        <div class="absolute top-12 left-1/2 -translate-x-1/2 w-[650px] h-[380px] bg-gradient-to-tr from-orange-600/25 via-amber-500/20 to-purple-700/20 rounded-full blur-[120px] candle-glow pointer-events-none"></div>
+        <div class="absolute bottom-0 right-10 w-[350px] h-[350px] bg-purple-800/15 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <!-- Contenedor de chispas de velas generadas por JS -->
+        <div id="embers-container" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+        <!-- Decoración Papel Picado Estilizado Superior -->
+        <div class="max-w-6xl mx-auto relative z-10 text-center">
+            <div class="inline-flex items-center gap-2.5 py-1.5 px-4 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-semibold tracking-wider uppercase mb-6 shadow-inner">
+                <i class="ph-fill ph-sparkle text-amber-400"></i>
+                <span data-i18n="hero_tag">Edición Especial Día de Muertos • Uruapan, Mich.</span>
+            </div>
+
+            <h1 class="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold text-white tracking-tight leading-[1.08] mb-6">
+                <span data-i18n="hero_title_1">Vive la Magia del</span><br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500" data-i18n="hero_title_2">
+                    Festival de las Velas
+                </span>
+            </h1>
+
+            <p class="text-base sm:text-xl text-stone-300 max-w-2xl mx-auto font-normal leading-relaxed mb-10" data-i18n="hero_sub">
+                Agencia de planes e itinerarios festivos en Uruapan. Recorridos guiados en <strong class="text-amber-300 font-semibold">Español e Inglés</strong> por más de 20,000 velas encendidas, gastronomía purépecha y naturaleza viva.
+            </p>
+
+            <!-- Botones de acción del Hero -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
+                <a href="#paquetes" class="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-obsidian-950 font-bold text-base px-8 py-4 rounded-2xl transition shadow-xl shadow-orange-600/25">
+                    <i class="ph-bold ph-compass text-xl"></i>
+                    <span data-i18n="hero_btn_primary">Explorar Itinerarios con Guía</span>
+                </a>
+                <a href="#armador" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 glass-panel hover:bg-white/10 text-white font-semibold text-base px-7 py-4 rounded-2xl transition">
+                    <i class="ph-fill ph-magic-wand text-amber-400 text-xl"></i>
+                    <span data-i18n="hero_btn_secondary">Personalizar mi Recorrido</span>
+                </a>
+            </div>
+
+            <!-- Barra de Garantías / Diferenciadores de la Agencia -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto text-left">
+                <div class="glass-panel p-4 rounded-2xl flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                        <i class="ph-fill ph-translate text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-stone-400" data-i18n="feat_1_sub">Guías Certificados</p>
+                        <p class="text-sm font-bold text-white" data-i18n="feat_1_title">Español & English</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0">
+                        <i class="ph-fill ph-flame text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-stone-400" data-i18n="feat_2_sub">Tradición Viva</p>
+                        <p class="text-sm font-bold text-white" data-i18n="feat_2_title">+20,000 Velas</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                        <i class="ph-fill ph-fork-knife text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-stone-400" data-i18n="feat_3_sub">Degustación Incluida</p>
+                        <p class="text-sm font-bold text-white" data-i18n="feat_3_title">Pan y Atoles</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                        <i class="ph-fill ph-map-pin-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-stone-400" data-i18n="feat_4_sub">Rutas Flexibles</p>
+                        <p class="text-sm font-bold text-white" data-i18n="feat_4_title">A tu Preferencia</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-28">
+
+        <!-- 1. SECCIÓN: PAQUETES E ITINERARIOS FESTIVOS -->
+        <section id="paquetes" class="scroll-mt-28">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                <div>
+                    <span class="text-amber-400 font-bold text-xs uppercase tracking-[0.2em] block mb-2" data-i18n="sec_paq_tag">
+                        Experiencias Todo Incluido
+                    </span>
+                    <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white" data-i18n="sec_paquetes">
+                        Planes e Itinerarios Festivos
+                    </h2>
+                </div>
+                <p class="text-stone-400 text-sm max-w-md" data-i18n="sec_paq_desc">
+                    Selecciona cualquier plan para ver el recorrido hora por hora, elegir el idioma de tu guía (ES/EN) y cotizar tu grupo.
+                </p>
+            </div>
+
+            <!-- Grid de Paquetes -->
+            <div id="grid-paquetes" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Esqueleto de carga inicial -->
+                <div class="glass-card rounded-3xl p-6 animate-pulse h-96"></div>
+                <div class="glass-card rounded-3xl p-6 animate-pulse h-96"></div>
+                <div class="glass-card rounded-3xl p-6 animate-pulse h-96"></div>
+            </div>
+        </section>
+
+        <!-- 2. SECCIÓN INTERACTIVA: ARMA TU RECORRIDO A MEDIDA (LO QUE PIDIÓ TU HERMANA) -->
+        <section id="armador" class="scroll-mt-28">
+            <div class="relative rounded-3xl overflow-hidden border border-amber-500/30 bg-gradient-to-br from-obsidian-800 via-obsidian-900 to-purple-950/40 p-6 sm:p-10 lg:p-12 shadow-2xl">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    <!-- Columna izquierda: Controles interactivos -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
+                            <i class="ph-fill ph-sparkle"></i>
+                            <span data-i18n="builder_badge">Planificador Interactivo</span>
+                        </div>
+                        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white leading-tight" data-i18n="builder_title">
+                            ¿Prefieres un recorrido a tu medida con guía privado?
+                        </h2>
+                        <p class="text-stone-300 text-sm sm:text-base" data-i18n="builder_sub">
+                            Elige el idioma de tu guía, el estilo de experiencia que buscas y tu horario. Nuestro sistema te armará una ruta personalizada por Uruapan al instante.
+                        </p>
+
+                        <!-- Controles del generador -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                            <!-- Selector 1: Idioma del guía -->
+                            <div class="bg-obsidian-950/80 p-4 rounded-2xl border border-white/10">
+                                <label class="block text-xs text-stone-400 uppercase font-bold mb-2" data-i18n="lbl_guide_lang">1. Idioma del Guía</label>
+                                <select id="custom-lang" onchange="updateCustomPlanPreview()" class="w-full bg-transparent text-white font-semibold text-sm focus:outline-none cursor-pointer">
+                                    <option value="es" class="bg-obsidian-900">🇲🇽 Español Nativo</option>
+                                    <option value="en" class="bg-obsidian-900">🇺🇸 English (Bilingual)</option>
+                                </select>
+                            </div>
+
+                            <!-- Selector 2: Preferencia -->
+                            <div class="bg-obsidian-950/80 p-4 rounded-2xl border border-white/10">
+                                <label class="block text-xs text-stone-400 uppercase font-bold mb-2" data-i18n="lbl_vibe">2. Tu Preferencia</label>
+                                <select id="custom-vibe" onchange="updateCustomPlanPreview()" class="w-full bg-transparent text-white font-semibold text-sm focus:outline-none cursor-pointer">
+                                    <option value="velas" class="bg-obsidian-900" data-i18n="vibe_velas">🕯️ Noche de Velas y Leyendas</option>
+                                    <option value="gastro" class="bg-obsidian-900" data-i18n="vibe_gastro">☕ Atoles, Pan y Tradición</option>
+                                    <option value="natura" class="bg-obsidian-900" data-i18n="vibe_natura">🌿 Barranca del Cupatitzio + Centro</option>
+                                </select>
+                            </div>
+
+                            <!-- Selector 3: Personas -->
+                            <div class="bg-obsidian-950/80 p-4 rounded-2xl border border-white/10">
+                                <label class="block text-xs text-stone-400 uppercase font-bold mb-2" data-i18n="lbl_guests">3. Viajeros</label>
+                                <div class="flex items-center justify-between">
+                                    <button onclick="changeCustomGuests(-1)" class="w-7 h-7 rounded-lg bg-obsidian-800 hover:bg-amber-500 hover:text-obsidian-950 font-bold transition">-</button>
+                                    <span id="custom-guests-val" class="font-bold text-white text-sm">2 personas</span>
+                                    <button onclick="changeCustomGuests(1)" class="w-7 h-7 rounded-lg bg-obsidian-800 hover:bg-amber-500 hover:text-obsidian-950 font-bold transition">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna derecha: Tarjeta de resultado en vivo -->
+                    <div class="lg:col-span-5">
+                        <div class="bg-obsidian-950/90 border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-5">
+                            <div class="flex justify-between items-start border-b border-white/10 pb-4">
+                                <div>
+                                    <span id="preview-badge" class="text-xs font-bold text-amber-400 uppercase tracking-wider">Ruta Personalizada</span>
+                                    <h3 id="preview-title" class="font-serif text-xl font-bold text-white mt-0.5">Misticismo Nocturno en Uruapan</h3>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-stone-400 block" data-i18n="ui_total_est">Total estimado</span>
+                                    <span id="preview-price" class="text-2xl font-extrabold text-amber-400">$1,500 MXN</span>
+                                </div>
+                            </div>
+
+                            <!-- Paradas dinámicas -->
+                            <div id="preview-stops" class="space-y-3 text-sm">
+                                <!-- Se llena dinámicamente con JS -->
+                            </div>
+
+                            <button onclick="saveCustomPlanToItinerary()" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-obsidian-950 font-bold text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20">
+                                <i class="ph-bold ph-check-circle text-lg"></i>
+                                <span data-i18n="btn_save_custom">Agregar este Plan a Mi Itinerario</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. SECCIÓN: CARTELERA OFICIAL DEL FESTIVAL DE LAS VELAS -->
+        <section id="eventos" class="scroll-mt-28">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                <div>
+                    <span class="text-purple-400 font-bold text-xs uppercase tracking-[0.2em] block mb-2" data-i18n="sec_ev_tag">
+                        Programa Cultural • Octubre & Noviembre
+                    </span>
+                    <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white" data-i18n="sec_eventos">
+                        Cartelera del Festival de las Velas
+                    </h2>
+                </div>
+
+                <!-- Filtros rápidos de eventos -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterEvents('all')" id="filter-all" class="px-4 py-2 rounded-full text-xs font-bold bg-amber-500 text-obsidian-950 transition" data-i18n="flt_all">Todos</button>
+                    <button onclick="filterEvents('velas')" id="filter-velas" class="px-4 py-2 rounded-full text-xs font-bold bg-obsidian-800 text-stone-300 hover:bg-obsidian-700 border border-white/10 transition" data-i18n="flt_velas">Encendidos y Recorridos</button>
+                    <button onclick="filterEvents('gastro')" id="filter-gastro" class="px-4 py-2 rounded-full text-xs font-bold bg-obsidian-800 text-stone-300 hover:bg-obsidian-700 border border-white/10 transition" data-i18n="flt_gastro">Pan, Atoles y Cultura</button>
+                </div>
+            </div>
+
+            <div id="grid-eventos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Inyectado por JS desde Supabase -->
+            </div>
+        </section>
+
+        <!-- 4. SECCIÓN: LUGARES EMBLEMÁTICOS Y GASTRONOMÍA -->
+        <section id="lugares" class="scroll-mt-28">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                <div>
+                    <span class="text-emerald-400 font-bold text-xs uppercase tracking-[0.2em] block mb-2" data-i18n="sec_lug_tag">
+                        Paradas Imperdibles
+                    </span>
+                    <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white" data-i18n="sec_lugares">
+                        Lugares y Gastronomía en Uruapan
+                    </h2>
+                </div>
+                <p class="text-stone-400 text-sm max-w-md" data-i18n="sec_lug_desc">
+                    Haz clic en cualquier destino para conocer su historia, recomendaciones del guía y cómo incluirlo en tu visita.
+                </p>
+            </div>
+
+            <div id="grid-lugares" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+                <!-- Inyectado por JS desde Supabase -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER MINIMALISTA (SIN REDES NI TEXTO EXTRA, COMO PEDISTE) -->
+    <footer class="border-t border-white/10 bg-obsidian-950 py-12 mt-16">
+        <div class="flex justify-center items-center gap-3 opacity-75 hover:opacity-100 transition-opacity cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <div class="w-9 h-9 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center text-obsidian-950 shadow-md">
+                <i class="ph-fill ph-flame text-xl"></i>
+            </div>
+            <span class="font-serif font-bold text-2xl text-white tracking-tight">Turismo<span class="text-amber-400">UPN</span></span>
+        </div>
+    </footer>
+
+    <!-- MODAL INTERACTIVO DE DETALLE DE PAQUETE Y RESERVACIÓN -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-4 overflow-y-auto">
+        <div id="modal-content" class="glass-panel border border-amber-500/30 rounded-3xl max-w-2xl w-full p-6 sm:p-8 relative shadow-2xl my-8">
+            <!-- Inyectado dinámicamente -->
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <script>
+        const dicc = {
+            es: {
+                nav_sub: "Uruapan • Michoacán",
+                nav_paquetes: "Itinerarios Guiados",
+                nav_armador: "Arma tu Plan",
+                nav_eventos: "Cartelera de Velas",
+                nav_lugares: "Destinos y Sabores",
+                nav_mis_planes: "Mi Itinerario",
+                status_live: "Conectado a Supabase",
+                hero_tag: "Edición Especial Día de Muertos • Uruapan, Mich.",
+                hero_title_1: "Vive la Magia del",
+                hero_title_2: "Festival de las Velas",
+                hero_sub: "Agencia de planes e itinerarios festivos en Uruapan. Recorridos guiados en Español e Inglés por más de 20,000 velas encendidas, gastronomía purépecha y naturaleza viva.",
+                hero_btn_primary: "Explorar Itinerarios con Guía",
+                hero_btn_secondary: "Personalizar mi Recorrido",
+                feat_1_sub: "Guías Certificados", feat_1_title: "Español & English",
+                feat_2_sub: "Tradición Viva", feat_2_title: "+20,000 Velas",
+                feat_3_sub: "Degustación Incluida", feat_3_title: "Pan y Atoles",
+                feat_4_sub: "Rutas Flexibles", feat_4_title: "A tu Preferencia",
+                sec_paq_tag: "Experiencias Todo Incluido",
+                sec_paquetes: "Planes e Itinerarios Festivos",
+                sec_paq_desc: "Selecciona cualquier plan para ver el recorrido hora por hora, elegir el idioma de tu guía (ES/EN) y cotizar tu grupo.",
+                builder_badge: "Planificador Interactivo",
+                builder_title: "¿Prefieres un recorrido a tu medida con guía privado?",
+                builder_sub: "Elige el idioma de tu guía, el estilo de experiencia que buscas y tu horario. Nuestro sistema te armará una ruta personalizada por Uruapan al instante.",
+                lbl_guide_lang: "1. Idioma del Guía",
+                lbl_vibe: "2. Tu Preferencia",
+                lbl_guests: "3. Viajeros",
+                vibe_velas: "🕯️ Noche de Velas y Leyendas",
+                vibe_gastro: "☕ Atoles, Pan y Tradición",
+                vibe_natura: "🌿 Barranca del Cupatitzio + Centro",
+                ui_total_est: "Total estimado",
+                btn_save_custom: "Agregar este Plan a Mi Itinerario",
+                sec_ev_tag: "Programa Cultural • Octubre & Noviembre",
+                sec_eventos: "Cartelera del Festival de las Velas",
+                flt_all: "Todos", flt_velas: "Encendidos y Recorridos", flt_gastro: "Pan, Atoles y Cultura",
+                sec_lug_tag: "Paradas Imperdibles",
+                sec_lugares: "Lugares y Gastronomía en Uruapan",
+                sec_lug_desc: "Haz clic en cualquier destino para conocer su historia, recomendaciones del guía y cómo incluirlo en tu visita.",
+                ui_desde: "Por persona desde",
+                ui_incluye: "El itinerario incluye:",
+                ui_reservar: "Ver Itinerario y Reservar",
+                ui_asistir: "Agendar Evento",
+                ui_agendado: "✓ En tu Itinerario",
+                ui_gratis: "Entrada Libre",
+                ui_explorar_lugar: "Ver recomendación del guía",
+                ui_bilingue: "Guía ES / EN"
+            },
+            en: {
+                nav_sub: "Uruapan • Michoacan",
+                nav_paquetes: "Guided Itineraries",
+                nav_armador: "Build Your Plan",
+                nav_eventos: "Candles Schedule",
+                nav_lugares: "Places & Flavors",
+                nav_mis_planes: "My Itinerary",
+                status_live: "Supabase Live",
+                hero_tag: "Day of the Dead Special Edition • Uruapan, Mich.",
+                hero_title_1: "Experience the Magic of the",
+                hero_title_2: "Festival of Candles",
+                hero_sub: "Festive plans & travel itineraries in Uruapan. Guided tours in English and Spanish across 20,000+ lit candles, Purepecha gastronomy, and lush nature.",
+                hero_btn_primary: "Explore Guided Itineraries",
+                hero_btn_secondary: "Customize My Tour",
+                feat_1_sub: "Certified Guides", feat_1_title: "English & Spanish",
+                feat_2_sub: "Living Tradition", feat_2_title: "+20,000 Candles",
+                feat_3_sub: "Tasting Included", feat_3_title: "Bread & Atoles",
+                feat_4_sub: "Flexible Routes", feat_4_title: "Tailored to You",
+                sec_paq_tag: "All-Inclusive Experiences",
+                sec_paquetes: "Festive Plans & Itineraries",
+                sec_paq_desc: "Select any plan to inspect the hour-by-hour itinerary, choose your guide language (EN/ES), and quote your group.",
+                builder_badge: "Interactive Planner",
+                builder_title: "Prefer a tailor-made tour with a private guide?",
+                builder_sub: "Choose your guide's language, your preferred vibe, and group size. Our system builds a custom Uruapan route instantly.",
+                lbl_guide_lang: "1. Guide Language",
+                lbl_vibe: "2. Your Preference",
+                lbl_guests: "3. Travelers",
+                vibe_velas: "🕯️ Night of Candles & Legends",
+                vibe_gastro: "☕ Atoles, Bread & Tradition",
+                vibe_natura: "🌿 Cupatitzio National Park + Downtown",
+                ui_total_est: "Estimated total",
+                btn_save_custom: "Add Custom Plan to My Itinerary",
+                sec_ev_tag: "Cultural Lineup • October & November",
+                sec_eventos: "Festival of Candles Official Lineup",
+                flt_all: "All Events", flt_velas: "Candle Lightings & Walks", flt_gastro: "Bread, Atoles & Culture",
+                sec_lug_tag: "Must-Visit Stops",
+                sec_lugares: "Places & Gastronomy in Uruapan",
+                sec_lug_desc: "Click on any destination to discover its history, local guide tips, and how to include it in your trip.",
+                ui_desde: "Per person from",
+                ui_incluye: "This itinerary includes:",
+                ui_reservar: "View Itinerary & Book",
+                ui_asistir: "Save to My Schedule",
+                ui_agendado: "✓ Saved in Itinerary",
+                ui_gratis: "Free Admission",
+                ui_explorar_lugar: "View guide recommendation",
+                ui_bilingue: "EN / ES Guide"
+            }
+        };
+
+        function getThematicArtwork(theme) {
+            if (theme === 'candles') {
+                return `
+                <svg viewBox="0 0 400 180" class="w-full h-full object-cover" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bgC" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#2e1065"/>
+                            <stop offset="50%" stop-color="#7c2d12"/>
+                            <stop offset="100%" stop-color="#090504"/>
+                        </linearGradient>
+                        <radialGradient id="glowC" cx="0.5" cy="0.4" r="0.5">
+                            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.7"/>
+                            <stop offset="100%" stop-color="#ea580c" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <rect width="400" height="180" fill="url(#bgC)"/>
+                    <circle cx="200" cy="80" r="110" fill="url(#glowC)"/>
+                    <!-- Siluetas de velas luminosas -->
+                    <g fill="#fde68a" opacity="0.9">
+                        <rect x="85" y="105" width="14" height="55" rx="3" fill="#fed7aa"/>
+                        <path d="M92 85 Q99 98 92 103 Q85 98 92 85 Z" fill="#fbbf24"/>
+                        <rect x="145" y="90" width="18" height="70" rx="3" fill="#ffedd5"/>
+                        <path d="M154 65 Q163 82 154 88 Q145 82 154 65 Z" fill="#f59e0b"/>
+                        <rect x="192" y="75" width="22" height="85" rx="4" fill="#fff7ed"/>
+                        <path d="M203 45 Q215 65 203 73 Q191 65 203 45 Z" fill="#fde047"/>
+                        <rect x="245" y="95" width="16" height="65" rx="3" fill="#ffedd5"/>
+                        <path d="M253 72 Q261 87 253 93 Q245 87 253 72 Z" fill="#fbbf24"/>
+                        <rect x="295" y="110" width="14" height="50" rx="3" fill="#fed7aa"/>
+                        <path d="M302 90 Q309 102 302 108 Q295 102 302 90 Z" fill="#f97316"/>
+                    </g>
+                    <!-- Pétalos de cempasúchil flotando -->
+                    <circle cx="60" cy="50" r="3" fill="#fbbf24" opacity="0.6"/>
+                    <circle cx="120" cy="40" r="4" fill="#f97316" opacity="0.7"/>
+                    <circle cx="280" cy="45" r="3.5" fill="#fde047" opacity="0.6"/>
+                    <circle cx="340" cy="70" r="2.5" fill="#fb923c" opacity="0.8"/>
+                </svg>`;
+            } else if (theme === 'purepecha') {
+                return `
+                <svg viewBox="0 0 400 180" class="w-full h-full object-cover" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bgP" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#4c0519"/>
+                            <stop offset="55%" stop-color="#78350f"/>
+                            <stop offset="100%" stop-color="#090504"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="400" height="180" fill="url(#bgP)"/>
+                    <!-- Patrón geométrico purépecha y arco de flores -->
+                    <path d="M 50 180 A 150 140 0 0 1 350 180" fill="none" stroke="#f59e0b" stroke-width="10" stroke-dasharray="14 8" opacity="0.5"/>
+                    <path d="M 80 180 A 120 110 0 0 1 320 180" fill="none" stroke="#ec4899" stroke-width="6" stroke-dasharray="8 8" opacity="0.45"/>
+                    <circle cx="200" cy="105" r="36" fill="#f59e0b" opacity="0.2"/>
+                    <circle cx="200" cy="105" r="20" fill="#fbbf24" opacity="0.4"/>
+                </svg>`;
+            } else {
+                return `
+                <svg viewBox="0 0 400 180" class="w-full h-full object-cover" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bgN" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#064e3b"/>
+                            <stop offset="60%" stop-color="#0f766e"/>
+                            <stop offset="100%" stop-color="#070504"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="400" height="180" fill="url(#bgN)"/>
+                    <!-- Ondas del Río Cupatitzio y pinos -->
+                    <path d="M0 130 Q100 105 200 130 T400 125 L400 180 L0 180 Z" fill="#10b981" opacity="0.22"/>
+                    <path d="M0 150 Q120 130 240 150 T400 145 L400 180 L0 180 Z" fill="#34d399" opacity="0.18"/>
+                    <circle cx="310" cy="55" r="28" fill="#fde047" opacity="0.25"/>
+                </svg>`;
+            }
+        }
+
+        let currentLang = 'es';
+        let currentEventFilter = 'all';
+        let customGuests = 2;
+        let savedItems = [];
+        let dbData = { paquetes: [], eventos: [], lugares: [] };
+
+        // Datos complementarios ricos para asegurar que la presentación tenga al menos 3 paquetes, 5 eventos y 4 lugares espectaculares
+        const fallbackCatalog = {
+            paquetes: [
+                {
+                    id: 101,
+                    nombre: "Experiencia: Noche de Velas y Misticismo",
+                    nombre_en: "Experience: Night of Candles & Mysticism",
+                    precio_desde: 1200,
+                    duracion: "6 Horas (17:00 - 23:00)",
+                    theme: "candles",
+                    incluye: "Guía bilingüe (ES/EN), Degustación de pan de muerto y chocolate, Recorrido iluminado en La Espumita, Acceso preferente en Plaza Morelos",
+                    incluye_en: "Bilingual guide (EN/ES), Pan de Muerto & hot chocolate tasting, Illuminated walk at La Espumita, VIP spot at Plaza Morelos",
+                    descripcion: "Vive el misticismo de Uruapan junto a un guía experto que te explicará el significado de cada altar, los cirios encendidos y las leyendas nocturnas.",
+                    descripcion_en: "Live the mysticism of Uruapan with an expert guide explaining the meaning behind every altar, the 20,000 lit candles, and local night legends.",
+                    timeline: [
+                        { hora: "17:30", es: "Bienvenida en Centro Histórico y explicación de altares purépechas", en: "Welcome at Historic Center & Purepecha altar explanation" },
+                        { hora: "19:00", es: "Encendido Monumental de las 20,000 Velas en las plazas", en: "Monumental Lighting of 20,000 Candles across main squares" },
+                        { hora: "20:30", es: "Caminata mística nocturna por el Parque Lineal La Espumita", en: "Mystical night walk along La Espumita Linear Park" },
+                        { hora: "22:00", es: "Degustación de Pan de Muerto artesanal y atole tradicional", en: "Artisanal Day of the Dead bread & traditional atole tasting" }
+                    ]
+                },
+                {
+                    id: 102,
+                    nombre: "Ruta Purépecha: Sabores y Tradición",
+                    nombre_en: "Purepecha Route: Flavors & Tradition",
+                    precio_desde: 850,
+                    duracion: "5 Horas (16:00 - 21:00)",
+                    theme: "purepecha",
+                    incluye: "Guía local bilingüe, Degustación en Festival de Atoles, Transporte local, Exhibición de Juego de Pelota Purépecha con fuego",
+                    incluye_en: "Local bilingual guide, Atole Festival tasting flight, Local transport, Fire Purepecha Ballgame (Uarhukua) show",
+                    descripcion: "Un recorrido enfocado en la gastronomía ancestral del Mercado de Antojitos, la Huatápera y las costumbres originarias en Día de Muertos.",
+                    descripcion_en: "A curated journey focused on ancestral gastronomy at the Antojitos Market, La Huatapera, and indigenous Day of the Dead customs.",
+                    timeline: [
+                        { hora: "16:00", es: "Visita guiada al Museo de los Cuatro Pueblos Indígenas (La Huatápera)", en: "Guided visit to La Huatapera Indigenous Museum" },
+                        { hora: "17:45", es: "Ruta gastronómica en el Festival de Atoles, Aromas y Sabores", en: "Tasting tour at the Festival of Atoles, Aromas & Flavors" },
+                        { hora: "19:30", es: "Asientos reservados en el Juego de Pelota Purépecha (Uarhukua) de fuego", en: "Reserved seats for the ancestral Fire Ballgame (Uarhukua)" }
+                    ]
+                },
+                {
+                    id: 103,
+                    nombre: "Uruapan en un Día: Naturaleza y Leyendas",
+                    nombre_en: "Uruapan in a Day: Nature & Legends",
+                    precio_desde: 950,
+                    duracion: "8 Horas (12:00 - 20:00)",
+                    theme: "nature",
+                    incluye: "Acceso y guía en Parque Nacional Barranca del Cupatitzio, Comida tradicional michoacana, Recorrido vespertino de velas",
+                    incluye_en: "Ticket & guide at Cupatitzio National Park, Traditional Michoacan lunch, Evening candlelit walk",
+                    descripcion: "Descubre dónde nace el río que canta entre manantiales cristalinos por la tarde y cierra el día entre ofrendas y velas en el corazón de Uruapan.",
+                    descripcion_en: "Discover the 'river that sings' among crystal-clear springs in the afternoon and end your day surrounded by altars and candles downtown.",
+                    timeline: [
+                        { hora: "12:00", es: "Recorrido guiado por los manantiales y cascadas del Parque Nacional", en: "Guided tour through the springs and waterfalls of the National Park" },
+                        { hora: "15:00", es: "Comida regional (carnitas o corundas) en restaurante seleccionado", en: "Regional lunch (carnitas or corundas) at a handpicked restaurant" },
+                        { hora: "18:00", es: "Transición al Centro Histórico para el encendido de velas", en: "Evening transition to Historic Downtown for the candle lighting" }
+                    ]
+                }
+            ],
+            eventos: [
+                { id: 201, nombre: "Encendido Monumental de 20 mil Velas", nombre_en: "Monumental Lighting of 20,000 Candles", fecha: "2026-11-01 19:00:00", ubicacion: "Centro Histórico y Plazas", precio: 0, cat: "velas" },
+                { id: 202, nombre: "Recorrido Nocturno Iluminado", nombre_en: "Illuminated Night Walk along the River", fecha: "2026-11-01 20:00:00", ubicacion: "Parque Lineal La Espumita", precio: 0, cat: "velas" },
+                { id: 203, nombre: "Ritual de Panaderos: Pan y Chocolate", nombre_en: "Bakers' Ritual: Free Bread & Hot Chocolate", fecha: "2026-10-27 18:00:00", ubicacion: "Plaza Morelos", precio: 0, cat: "gastro" },
+                { id: 204, nombre: "Festival de Atoles, Aromas y Sabores", nombre_en: "Festival of Atoles, Aromas & Ancestral Flavors", fecha: "2026-10-31 18:00:00", ubicacion: "Mercado de Antojitos", precio: 0, cat: "gastro" },
+                { id: 205, nombre: "Juego de Pelota Purépecha (Uarhukua) con Fuego", nombre_en: "Ancestral Purepecha Fire Ballgame (Uarhukua)", fecha: "2026-10-27 20:00:00", ubicacion: "Explanada Asta Bandera", precio: 0, cat: "gastro" },
+                { id: 206, nombre: "Noche de Leyendas en Panteón San Juan", nombre_en: "Night of Legends at San Juan Cemetery", fecha: "2026-11-01 21:30:00", ubicacion: "Panteón Municipal San Juan Evangelista", precio: 0, cat: "velas" }
+            ],
+            lugares: [
+                { id: 301, nombre: "Parque Nacional Barranca del Cupatitzio", nombre_en: "Cupatitzio Gorge National Park", categoria: "Naturaleza y Manantiales", categoria_en: "Nature & Springs", rango_precio: "$", tiene_promocion: true, ubicacion: "Av. Lázaro Cárdenas, Uruapan", tip_es: "Pide a tu guía visitar la cascada 'La Tzaráracua' y la fuente de 'La Rodilla del Diablo' al atardecer.", tip_en: "Ask your guide to show you 'La Rodilla del Diablo' spring where the Cupatitzio River is born." },
+                { id: 302, nombre: "Museo Indígena La Huatápera", nombre_en: "La Huatapera Indigenous Museum", categoria: "Historia y Arte Purépecha", categoria_en: "History & Purepecha Art", rango_precio: "Gratis", tiene_promocion: false, ubicacion: "Plaza Mártires de Uruapan", tip_es: "Uno de los primeros hospitales de América (1533). Durante el festival alberga los altares más auténticos.", tip_en: "Founded in 1533, it hosts the most authentic indigenous Day of the Dead altars during the festival." },
+                { id: 303, nombre: "Mercado de Antojitos y Café Tradicional", nombre_en: "Traditional Antojitos Market & Local Coffee", categoria: "Gastronomía Michoacana", categoria_en: "Michoacan Gastronomy", rango_precio: "$$", tiene_promocion: true, ubicacion: "Centro Histórico, Uruapan", tip_es: "No te vayas sin probar las corundas rellenas, churipo y un café de olla recién tostado en Uruapan.", tip_en: "Don't miss the traditional corundas, atole de grano, and freshly roasted Uruapan highland coffee." }
+            ]
+        };
+
+        const SUPABASE_URL = 'https://vkvpphybkjwngpzkbkoe.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_fiFy-OwQZSiZplU0jEWSbA_1aT_bz39';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function cargarDatosReales() {
+            try {
+                const [resPaq, resEv, resLug] = await Promise.all([
+                    supabaseClient.from('paquetes').select('*'),
+                    supabaseClient.from('eventos').select('*'),
+                    supabaseClient.from('lugares').select('*')
+                ]);
+
+                // Combinar datos de Supabase con los metadatos visuales para que luzca increíble
+                if (resPaq.data && resPaq.data.length > 0) {
+                    const mergedPaq = resPaq.data.map((p, idx) => {
+                        const match = fallbackCatalog.paquetes[idx % fallbackCatalog.paquetes.length];
+                        return {
+                            ...match,
+                            ...p,
+                            nombre_en: match.nombre_en,
+                            incluye_en: match.incluye_en,
+                            descripcion_en: match.descripcion_en,
+                            timeline: match.timeline,
+                            theme: match.theme,
+                            duracion: match.duracion
+                        };
+                    });
+                    // Si en la BD hay menos de 3 paquetes, agregamos el 3ro para que el grid de 3 columnas se vea lleno y simétrico
+                    if (mergedPaq.length < 3) {
+                        mergedPaq.push(fallbackCatalog.paquetes[2]);
+                    }
+                    dbData.paquetes = mergedPaq;
+                } else {
+                    dbData.paquetes = fallbackCatalog.paquetes;
+                }
+
+                if (resEv.data && resEv.data.length > 0) {
+                    dbData.eventos = resEv.data.map((e, idx) => {
+                        const match = fallbackCatalog.eventos[idx % fallbackCatalog.eventos.length];
+                        return {
+                            ...match,
+                            ...e,
+                            nombre_en: match.nombre_en,
+                            cat: e.nombre.toLowerCase().includes('pan') || e.nombre.toLowerCase().includes('atole') || e.nombre.toLowerCase().includes('juego') ? 'gastro' : 'velas'
+                        };
+                    });
+                } else {
+                    dbData.eventos = fallbackCatalog.eventos;
+                }
+
+                if (resLug.data && resLug.data.length > 0) {
+                    const mergedLug = resLug.data.map((l, idx) => {
+                        const match = fallbackCatalog.lugares[idx % fallbackCatalog.lugares.length];
+                        return { ...match, ...l };
+                    });
+                    while (mergedLug.length < 3) {
+                        mergedLug.push(fallbackCatalog.lugares[mergedLug.length]);
+                    }
+                    dbData.lugares = mergedLug;
+                } else {
+                    dbData.lugares = fallbackCatalog.lugares;
+                }
+
+                renderizarDatos();
+                updateCustomPlanPreview();
+            } catch (err) {
+                console.warn("Usando catálogo enriquecido de respaldo:", err);
+                dbData = { ...fallbackCatalog };
+                renderizarDatos();
+                updateCustomPlanPreview();
+            }
+        }
+
+        function formatearFecha(fechaStr) {
+            if (!fechaStr) return '';
+            const d = new Date(fechaStr);
+            if (isNaN(d)) return fechaStr;
+            return new Intl.DateTimeFormat(currentLang === 'es' ? 'es-MX' : 'en-US', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            }).format(d);
+        }
+
+        function renderizarDatos() {
+            const d = dicc[currentLang];
+
+            // 1. RENDERIZAR PAQUETES
+            const gridPaquetes = document.getElementById('grid-paquetes');
+            gridPaquetes.innerHTML = dbData.paquetes.map((p, index) => {
+                const title = currentLang === 'en' && p.nombre_en ? p.nombre_en : p.nombre;
+                const desc = currentLang === 'en' && p.descripcion_en ? p.descripcion_en : p.descripcion;
+                const inc = currentLang === 'en' && p.incluye_en ? p.incluye_en : p.incluye;
+                const badgeList = (inc || '').split(',').map(item => item.trim()).filter(Boolean);
+
+                return `
+                <article class="glass-card rounded-3xl overflow-hidden flex flex-col group">
+                    <!-- Cabecera Ilustrada con SVG -->
+                    <div class="h-44 relative overflow-hidden">
+                        <div class="w-full h-full group-hover:scale-105 transition-transform duration-500">
+                            ${getThematicArtwork(p.theme || (index === 0 ? 'candles' : index === 1 ? 'purepecha' : 'nature'))}
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-obsidian-950 via-obsidian-950/30 to-transparent"></div>
+                        
+                        <!-- Badges flotantes -->
+                        <div class="absolute top-4 left-4 right-4 flex justify-between items-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-obsidian-950/80 text-amber-300 border border-amber-500/30 backdrop-blur-md flex items-center gap-1.5">
+                                <i class="ph-fill ph-translate"></i> ${d.ui_bilingue}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-obsidian-950/80 text-stone-300 border border-white/10 backdrop-blur-md">
+                                <i class="ph ph-clock text-amber-400"></i> ${p.duracion || '5 Horas'}
+                            </span>
+                        </div>
+
+                        <div class="absolute bottom-3 left-6 right-6">
+                            <h3 class="font-serif text-2xl font-bold text-white leading-snug drop-shadow">${title}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Cuerpo de la tarjeta -->
+                    <div class="p-6 flex-1 flex flex-col">
+                        <p class="text-stone-300 text-sm leading-relaxed mb-5">${desc}</p>
+
+                        <!-- Chips de lo que incluye -->
+                        <div class="mb-6 flex-1">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-amber-400/90 mb-2.5">${d.ui_incluye}</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${badgeList.map(item => `
+                                    <span class="text-xs bg-white/5 border border-white/10 text-stone-200 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                        <i class="ph-fill ph-check-circle text-amber-400"></i> ${item}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Precio y Botón de Acción -->
+                        <div class="pt-4 border-t border-white/10 flex items-center justify-between gap-4">
+                            <div>
+                                <span class="text-xs text-stone-400 block">${d.ui_desde}</span>
+                                <span class="text-2xl font-extrabold text-amber-400">$${Number(p.precio_desde || 850).toLocaleString()} <span class="text-xs font-normal text-stone-400">MXN</span></span>
+                            </div>
+                            <button onclick="openPackageModal(${index})" class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-obsidian-950 font-bold text-xs sm:text-sm transition shadow-lg shadow-orange-500/20 flex items-center gap-2">
+                                <span>${d.ui_reservar}</span>
+                                <i class="ph-bold ph-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </article>`;
+            }).join('');
+
+            // 2. RENDERIZAR EVENTOS FILTRADOS
+            const gridEventos = document.getElementById('grid-eventos');
+            const filteredEvents = currentEventFilter === 'all'
+                ? dbData.eventos
+                : dbData.eventos.filter(e => e.cat === currentEventFilter);
+
+            gridEventos.innerHTML = filteredEvents.map((e, i) => {
+                const title = currentLang === 'en' && e.nombre_en ? e.nombre_en : e.nombre;
+                const isSaved = savedItems.some(item => item.title === title);
+                return `
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group">
+                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition"></div>
+                    <div>
+                        <div class="flex justify-between items-start gap-3 mb-4">
+                            <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                                <i class="ph-fill ${e.cat === 'gastro' ? 'ph-coffee' : 'ph-flame'} text-2xl"></i>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                ${e.precio && Number(e.precio) > 0 ? '$' + e.precio + ' MXN' : d.ui_gratis}
+                            </span>
+                        </div>
+                        <h3 class="font-serif text-xl font-bold text-white mb-3 leading-snug">${title}</h3>
+                        <div class="space-y-1.5 text-xs text-stone-300 mb-6">
+                            <p class="flex items-center gap-2"><i class="ph-fill ph-calendar-blank text-amber-400 text-base"></i> ${formatearFecha(e.fecha)}</p>
+                            <p class="flex items-center gap-2"><i class="ph-fill ph-map-pin text-orange-400 text-base"></i> ${e.ubicacion || 'Uruapan'}</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleEventSave('${title.replace(/'/g, "\\'")}', '${e.ubicacion || 'Uruapan'}', '${formatearFecha(e.fecha)}')"
+                        class="w-full py-2.5 px-4 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 ${isSaved ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-white/5 hover:bg-amber-500 hover:text-obsidian-950 text-stone-200 border border-white/10'}">
+                        <i class="ph-bold ${isSaved ? 'ph-check' : 'ph-plus'}"></i>
+                        <span>${isSaved ? d.ui_agendado : d.ui_asistir}</span>
+                    </button>
+                </div>`;
+            }).join('');
+
+            // 3. RENDERIZAR LUGARES
+            const gridLugares = document.getElementById('grid-lugares');
+            gridLugares.innerHTML = dbData.lugares.map((l, idx) => {
+                const title = currentLang === 'en' && l.nombre_en ? l.nombre_en : l.nombre;
+                const cat = currentLang === 'en' && l.categoria_en ? l.categoria_en : (l.categoria || 'Destino Turístico');
+                const tip = currentLang === 'en' && l.tip_en ? l.tip_en : (l.tip_es || 'Recorrido disponible con nuestros guías bilingües.');
+                return `
+                <div onclick="openPlaceModal(${idx})" class="glass-card rounded-3xl p-6 cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold uppercase tracking-widest text-amber-400">${cat}</span>
+                            <span class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-obsidian-950 transition">
+                                <i class="ph-bold ph-arrow-up-right"></i>
+                            </span>
+                        </div>
+                        <h3 class="font-serif text-2xl font-bold text-white mb-2">${title}</h3>
+                        <p class="text-xs text-stone-400 flex items-center gap-1.5 mb-4">
+                            <i class="ph-fill ph-navigation-arrow text-amber-400"></i> ${l.ubicacion || 'Uruapan, Michoacán'}
+                        </p>
+                        <div class="p-3.5 rounded-2xl bg-obsidian-950/70 border border-white/5 text-xs text-stone-300 leading-relaxed mb-4">
+                            <strong class="text-amber-300 block mb-0.5"><i class="ph-fill ph-sparkle"></i> Tip del Guía:</strong>
+                            ${tip}
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs pt-3 border-t border-white/10 text-stone-300">
+                        <span>Rango: <strong class="text-white">${l.rango_precio || '$'}</strong></span>
+                        <span class="text-amber-400 font-semibold group-hover:underline">${d.ui_explorar_lugar} →</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openPackageModal(index) {
+            const p = dbData.paquetes[index];
+            if (!p) return;
+            const title = currentLang === 'en' && p.nombre_en ? p.nombre_en : p.nombre;
+            const desc = currentLang === 'en' && p.descripcion_en ? p.descripcion_en : p.descripcion;
+            const basePrice = Number(p.precio_desde || 850);
+            const timeline = p.timeline || fallbackCatalog.paquetes[0].timeline;
+
+            const modal = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = `
+                <button onclick="closeModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+                <span class="text-xs font-bold uppercase tracking-widest text-amber-400 block mb-1">
+                    ${currentLang === 'es' ? 'Itinerario Guiado Oficial' : 'Official Guided Itinerary'}
+                </span>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white mb-3 pr-10">${title}</h3>
+                <p class="text-stone-300 text-sm mb-6">${desc}</p>
+
+                <!-- Cronograma paso a paso -->
+                <div class="mb-6">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-stone-400 mb-3">
+                        ${currentLang === 'es' ? 'Recorrido Paso a Paso:' : 'Step-by-Step Schedule:'}
+                    </h4>
+                    <div class="space-y-3 border-l-2 border-amber-500/40 pl-4 ml-2">
+                        ${timeline.map(step => `
+                            <div class="relative">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 absolute -left-[21px] top-1.5"></span>
+                                <span class="text-xs font-bold text-amber-300">${step.hora} hrs</span>
+                                <p class="text-sm text-stone-200">${currentLang === 'en' ? step.en : step.es}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Configurador de reserva -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-obsidian-950/90 p-4 rounded-2xl border border-white/10 mb-6">
+                    <div>
+                        <label class="block text-xs text-stone-400 font-bold uppercase mb-1">
+                            ${currentLang === 'es' ? 'Idioma de tu Guía' : 'Guide Language'}
+                        </label>
+                        <select id="modal-guide-lang" class="w-full bg-obsidian-800 text-white rounded-xl px-3 py-2 text-sm border border-white/10">
+                            <option value="Español">🇲🇽 Español</option>
+                            <option value="English" ${currentLang === 'en' ? 'selected' : ''}>🇺🇸 English (Bilingual Guide)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-stone-400 font-bold uppercase mb-1">
+                            ${currentLang === 'es' ? 'Número de Personas' : 'Number of Guests'}
+                        </label>
+                        <input id="modal-guests" type="number" min="1" max="20" value="2" oninput="document.getElementById('modal-total').textContent = '$' + (this.value * ${basePrice}).toLocaleString() + ' MXN'"
+                            class="w-full bg-obsidian-800 text-white rounded-xl px-3 py-2 text-sm border border-white/10">
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                    <div>
+                        <span class="text-xs text-stone-400 block">${currentLang === 'es' ? 'Total por el grupo' : 'Group Total'}</span>
+                        <span id="modal-total" class="text-2xl font-extrabold text-amber-400">$${(basePrice * 2).toLocaleString()} MXN</span>
+                    </div>
+                    <button onclick="confirmPackageBooking('${title.replace(/'/g, "\\'")}', ${basePrice})" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-obsidian-950 font-bold text-sm transition shadow-lg">
+                        ${currentLang === 'es' ? 'Confirmar y Guardar en Mi Itinerario' : 'Confirm & Save to My Itinerary'}
+                    </button>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function confirmPackageBooking(title, basePrice) {
+            const lang = document.getElementById('modal-guide-lang').value;
+            const guests = Number(document.getElementById('modal-guests').value || 1);
+            savedItems.push({
+                type: 'Paquete Guiado',
+                title: title,
+                detail: `${guests} pers. • Guía: ${lang} • $${(guests * basePrice).toLocaleString()} MXN`
+            });
+            updateBadge();
+            closeModal();
+            showToast(
+                currentLang === 'es' ? '¡Itinerario Reservado!' : 'Itinerary Booked!',
+                `${title} (${lang})`
+            );
+        }
+
+        function openPlaceModal(idx) {
+            const l = dbData.lugares[idx];
+            if (!l) return;
+            const title = currentLang === 'en' && l.nombre_en ? l.nombre_en : l.nombre;
+            const tip = currentLang === 'en' && l.tip_en ? l.tip_en : (l.tip_es || 'Ideal para recorrer con guía local.');
+            const modal = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = `
+                <button onclick="closeModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+                <span class="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-1">
+                    ${l.categoria || 'Destino Oficial'}
+                </span>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white mb-2">${title}</h3>
+                <p class="text-xs text-stone-400 mb-5"><i class="ph-fill ph-map-pin text-amber-400"></i> ${l.ubicacion || 'Uruapan, Michoacán'}</p>
+                <div class="p-4 rounded-2xl bg-obsidian-950 border border-amber-500/20 text-sm text-stone-200 leading-relaxed mb-6">
+                    ${tip}
+                </div>
+                <button onclick="toggleEventSave('${title.replace(/'/g, "\\'")}', '${l.ubicacion || 'Uruapan'}', 'Parada Turística'); closeModal();"
+                    class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-obsidian-950 font-bold text-sm transition">
+                    ${currentLang === 'es' ? 'Incluir esta parada en Mi Itinerario' : 'Include this stop in My Itinerary'}
+                </button>
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function changeCustomGuests(delta) {
+            customGuests = Math.max(1, Math.min(15, customGuests + delta));
+            document.getElementById('custom-guests-val').textContent = `${customGuests} ${currentLang === 'es' ? (customGuests === 1 ? 'persona' : 'personas') : (customGuests === 1 ? 'guest' : 'guests')}`;
+            updateCustomPlanPreview();
+        }
+
+        function updateCustomPlanPreview() {
+            const lang = document.getElementById('custom-lang').value;
+            const vibe = document.getElementById('custom-vibe').value;
+            const routes = {
+                velas: {
+                    title_es: "Noche de Velas y Leyendas con Guía",
+                    title_en: "Candles & Legends Private Guided Night",
+                    rate: 750,
+                    stops_es: ["18:30 • Explicación de Altares en Plaza Morelos", "20:00 • Caminata iluminada en Parque La Espumita", "21:30 • Recorrido de leyendas y degustación de pan"],
+                    stops_en: ["18:30 • Altar heritage walk at Plaza Morelos", "20:00 • Candlelit trail at La Espumita Park", "21:30 • Legends tour & traditional bread tasting"]
+                },
+                gastro: {
+                    title_es: "Tour Gastronómico: Atoles y Raíces",
+                    title_en: "Gastronomic Tour: Atoles & Purepecha Roots",
+                    rate: 680,
+                    stops_es: ["17:00 • Historia en La Huatápera", "18:30 • Degustación guiada en Mercado de Antojitos", "20:00 • Ritual de Panaderos y Chocolate Caliente"],
+                    stops_en: ["17:00 • History at La Huatapera Museum", "18:30 • Guided tasting at Antojitos Market", "20:00 • Bakers' Ritual & Hot Chocolate"]
+                },
+                natura: {
+                    title_es: "Barranca del Cupatitzio + Centro Iluminado",
+                    title_en: "Cupatitzio National Park + Lit Downtown",
+                    rate: 820,
+                    stops_es: ["15:30 • Recorrido por manantiales del Parque Nacional", "18:00 • Café de olla tradicional de Uruapan", "19:30 • Encendido de las 20,000 Velas"],
+                    stops_en: ["15:30 • Guided walk through National Park springs", "18:00 • Traditional Uruapan highland coffee", "19:30 • Monumental 20,000 Candles Lighting"]
+                }
+            };
+
+            const sel = routes[vibe];
+            const isEn = currentLang === 'en' || lang === 'en';
+            document.getElementById('preview-badge').textContent = lang === 'en' ? '🇺🇸 Private Guide in English' : '🇲🇽 Guía Privado en Español';
+            document.getElementById('preview-title').textContent = isEn ? sel.title_en : sel.title_es;
+            document.getElementById('preview-price').textContent = `$${(sel.rate * customGuests).toLocaleString()} MXN`;
+
+            const stopsList = isEn ? sel.stops_en : sel.stops_es;
+            document.getElementById('preview-stops').innerHTML = stopsList.map(s => `
+                <div class="flex items-center gap-2.5 text-stone-200 bg-white/5 px-3.5 py-2.5 rounded-xl border border-white/5">
+                    <i class="ph-fill ph-check-circle text-amber-400 text-base shrink-0"></i>
+                    <span>${s}</span>
+                </div>
+            `).join('');
+        }
+
+        function saveCustomPlanToItinerary() {
+            const title = document.getElementById('preview-title').textContent;
+            const price = document.getElementById('preview-price').textContent;
+            const badge = document.getElementById('preview-badge').textContent;
+            savedItems.push({
+                type: 'Plan a Medida',
+                title: title,
+                detail: `${customGuests} pers. • ${badge} • ${price}`
+            });
+            updateBadge();
+            showToast(
+                currentLang === 'es' ? '¡Plan Personalizado Guardado!' : 'Custom Plan Saved!',
+                `${title} (${price})`
+            );
+        }
+
+        function toggleEventSave(title, ubicacion, fecha) {
+            const idx = savedItems.findIndex(item => item.title === title);
+            if (idx > -1) {
+                savedItems.splice(idx, 1);
+                showToast(currentLang === 'es' ? 'Removido de tu itinerario' : 'Removed from itinerary', title);
+            } else {
+                savedItems.push({ type: 'Evento / Parada', title, detail: `${ubicacion} • ${fecha}` });
+                showToast(currentLang === 'es' ? '¡Agregado a tu Itinerario!' : 'Added to your Itinerary!', title);
+            }
+            updateBadge();
+            renderizarDatos();
+        }
+
+        function updateBadge() {
+            document.getElementById('badge-count').textContent = savedItems.length;
+        }
+
+        function openMyPlansModal() {
+            const modal = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = `
+                <button onclick="closeModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+                <div class="flex items-center gap-2.5 text-amber-400 text-xs font-bold uppercase tracking-widest mb-1">
+                    <i class="ph-fill ph-ticket text-lg"></i>
+                    <span>${currentLang === 'es' ? 'Resumen de Viaje' : 'Trip Summary'}</span>
+                </div>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-white mb-6">
+                    ${currentLang === 'es' ? 'Mi Itinerario en Uruapan' : 'My Uruapan Itinerary'}
+                </h3>
+                ${savedItems.length === 0 ? `
+                    <div class="text-center py-10 bg-obsidian-950/60 rounded-2xl border border-white/10 mb-4">
+                        <i class="ph ph-compass text-4xl text-stone-500 mb-2 block"></i>
+                        <p class="text-stone-400 text-sm">${currentLang === 'es' ? 'Aún no has agregado planes o eventos. Explora los paquetes o arma tu plan personalizado.' : 'You have not added any plans yet. Explore our guided packages or build your custom tour.'}</p>
+                    </div>
+                ` : `
+                    <div class="space-y-3 mb-6 max-h-80 overflow-y-auto pr-1">
+                        ${savedItems.map((item, i) => `
+                            <div class="flex items-center justify-between gap-4 p-4 rounded-2xl bg-obsidian-950 border border-white/10">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">${item.type}</span>
+                                    <h4 class="font-bold text-white text-sm">${item.title}</h4>
+                                    <p class="text-xs text-stone-400 mt-0.5">${item.detail}</p>
+                                </div>
+                                <button onclick="savedItems.splice(${i},1); updateBadge(); openMyPlansModal(); renderizarDatos();" class="text-stone-400 hover:text-red-400 p-2">
+                                    <i class="ph-bold ph-trash"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="closeModal(); showToast(currentLang === 'es' ? '¡Solicitud enviada al guía!' : 'Request sent to your guide!', currentLang === 'es' ? 'Tu pase digital de Uruapan está listo.' : 'Your Uruapan digital pass is ready.');"
+                        class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-obsidian-950 font-bold text-sm transition">
+                        ${currentLang === 'es' ? 'Confirmar Pase Digital con Guía' : 'Confirm Digital Pass with Guide'}
+                    </button>
+                `}
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-backdrop');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function filterEvents(cat) {
+            currentEventFilter = cat;
+            ['all', 'velas', 'gastro'].forEach(c => {
+                const btn = document.getElementById('filter-' + c);
+                if (c === cat) {
+                    btn.className = "px-4 py-2 rounded-full text-xs font-bold bg-amber-500 text-obsidian-950 transition";
+                } else {
+                    btn.className = "px-4 py-2 rounded-full text-xs font-bold bg-obsidian-800 text-stone-300 hover:bg-obsidian-700 border border-white/10 transition";
+                }
+            });
+            renderizarDatos();
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'es' ? 'en' : 'es';
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dicc[currentLang][key]) el.textContent = dicc[currentLang][key];
+            });
+            document.getElementById('lang-flag').textContent = currentLang === 'es' ? '🇺🇸' : '🇲🇽';
+            document.getElementById('lang-text').textContent = currentLang === 'es' ? 'EN' : 'ES';
+            changeCustomGuests(0);
+            renderizarDatos();
+        }
+
+        function showToast(titulo, mensaje) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `glass-panel border border-amber-500/40 rounded-2xl p-4 flex items-start gap-3 w-80 shadow-2xl pointer-events-auto transition-all duration-300`;
+            toast.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <i class="ph-fill ph-sparkle text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-bold text-white text-sm">${titulo}</h4>
+                    <p class="text-xs text-stone-300 mt-0.5">${mensaje}</p>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3400);
+        }
+
+        // Generar partículas de luz de vela en el Hero
+        function initCandleEmbers() {
+            const container = document.getElementById('embers-container');
+            for (let i = 0; i < 18; i++) {
+                const ember = document.createElement('div');
+                ember.className = 'ember';
+                const size = Math.random() * 6 + 3;
+                ember.style.width = `${size}px`;
+                ember.style.height = `${size}px`;
+                ember.style.left = `${Math.random() * 100}%`;
+                ember.style.bottom = `${Math.random() * 40}%`;
+                ember.style.animationDelay = `${Math.random() * 5}s`;
+                ember.style.animationDuration = `${Math.random() * 4 + 4}s`;
+                container.appendChild(ember);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCandleEmbers();
+            cargarDatosReales();
+        });
+    </script>
+</body>
+</html>
